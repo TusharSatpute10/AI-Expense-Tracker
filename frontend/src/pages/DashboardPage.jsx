@@ -4,10 +4,11 @@ import { TransactionList } from "../components/TransactionList"
 import { FilterBar } from "../components/FilterBar"
 import { TransactionForm } from "../components/TransactionForm"
 import { MonthlyChart } from "../components/MonthlyChart"
+import { MonthlyIncomeExpenseChart } from "../components/MonthlyIncomeExpenseChart"
 import { BudgetTracker } from "../components/BudgetTracker"
 import { Plus, TrendingUp, TrendingDown, Wallet } from "lucide-react"
 
-export function DashboardPage({ month, onMonthChange, dashboard, transactions, showForm, setShowForm, formData, setFormData, handleSubmit }) {
+export function DashboardPage({ month, onMonthChange, dashboard, transactions, showForm, setShowForm, formData, setFormData, handleSubmit, onRefresh }) {
   return (
     <div>
       <header className="page-header flex justify-between items-center">
@@ -71,18 +72,27 @@ export function DashboardPage({ month, onMonthChange, dashboard, transactions, s
         </div>
         <FilterBar month={month} onMonthChange={onMonthChange} />
         <div className="table-container">
-          <TransactionList transactions={transactions} />
+          <TransactionList transactions={transactions} onRefresh={onRefresh} />
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "2rem" }}>
         {dashboard && (
           <div className="card">
+            <h2 className="card-title">Monthly Income vs Expenses</h2>
+            <MonthlyIncomeExpenseChart
+              month={month}
+              totalIncome={dashboard.total_income}
+              totalExpenses={dashboard.total_expenses}
+            />
+          </div>
+        )}
+        {dashboard && (
+          <div className="card">
             <h2 className="card-title">Monthly Expense Distribution</h2>
             <MonthlyChart month={month} data={dashboard.category_breakdown} />
           </div>
         )}
-
         {dashboard && (
           <div className="card">
             <h2 className="card-title">Monthly Budget Tracking</h2>

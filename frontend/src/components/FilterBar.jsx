@@ -8,8 +8,26 @@ export function FilterBar({ month, onMonthChange }) {
     setSearch(e.target.value)
   }
 
+  // Generate dynamic month options for the current year and next year
+  const generateMonthOptions = () => {
+    const options = []
+    const currentYear = new Date().getFullYear()
+
+    for (let year = currentYear; year <= currentYear + 1; year++) {
+      for (let m = 1; m <= 12; m++) {
+        const monthStr = `${year}-${String(m).padStart(2, '0')}`
+        const monthName = new Date(year, m - 1).toLocaleString('default', { month: 'long' })
+        options.push({ value: monthStr, label: `${monthName} ${year}` })
+      }
+    }
+
+    return options
+  }
+
+  const monthOptions = generateMonthOptions()
+
   return (
-    <div style={{ marginBottom: "1.5rem", paddingBottom: "1rem", borderBottom: "1px solid var(--border)" }}>
+    <div style={{ marginBottom: "1.5rem", paddingBottom: "1rem", borderBottom: "1px solid var(--border-color)" }}>
       <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
         <span>Month: </span>
         <select
@@ -18,20 +36,11 @@ export function FilterBar({ month, onMonthChange }) {
             onMonthChange(e.target.value)
             setSearch("")
           }}
-          style={{ padding: "0.5rem", border: "1px solid var(--border)", borderRadius: "4px" }}
+          style={{ padding: "0.5rem", border: "1px solid var(--border-color)", borderRadius: "4px", background: "var(--bg-card)" }}
         >
-          <option value="2026-01">January 2026</option>
-          <option value="2026-02">February 2026</option>
-          <option value="2026-03">March 2026</option>
-          <option value="2026-04">April 2026</option>
-          <option value="2026-05">May 2026</option>
-          <option value="2026-06">June 2026</option>
-          <option value="2026-07">July 2026</option>
-          <option value="2026-08">August 2026</option>
-          <option value="2026-09">September 2026</option>
-          <option value="2026-10">October 2026</option>
-          <option value="2026-11">November 2026</option>
-          <option value="2026-12">December 2026</option>
+          {monthOptions.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
 
         <input
@@ -39,7 +48,7 @@ export function FilterBar({ month, onMonthChange }) {
           placeholder="Search description..."
           value={search}
           onChange={handleSearch}
-          style={{ padding: "0.5rem", border: "1px solid var(--border)", borderRadius: "4px", flex: 1 }}
+          style={{ padding: "0.5rem", border: "1px solid var(--border-color)", borderRadius: "4px", flex: 1, background: "var(--bg-main)", color: "var(--text-main)" }}
         />
       </div>
     </div>

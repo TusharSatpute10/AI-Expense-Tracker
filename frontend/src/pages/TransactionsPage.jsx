@@ -5,7 +5,7 @@ import { FilterBar } from "../components/FilterBar"
 import { TransactionForm } from "../components/TransactionForm"
 import { Plus } from "lucide-react"
 
-export function TransactionsPage() {
+export function TransactionsPage({ refreshData }) {
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7))
   const [transactions, setTransactions] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -43,6 +43,9 @@ export function TransactionsPage() {
       setFormData({ amount: "", type: "expense", category: "", description: "" })
       setShowForm(false)
       loadTransactions()
+      if (refreshData) {
+        refreshData()
+      }
     } catch (e) {
       console.error("Transaction creation failed:", e)
       alert("Failed to create transaction. Please check your input.")
@@ -81,7 +84,7 @@ export function TransactionsPage() {
               <div className="skeleton skeleton-text"></div>
             </div>
           ) : (
-            <TransactionList transactions={transactions} />
+            <TransactionList transactions={transactions} onRefresh={refreshData} />
           )}
         </div>
       </div>

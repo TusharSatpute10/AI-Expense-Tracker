@@ -220,9 +220,42 @@ def delete_budget(db: Session, budget_id: int) -> bool:
     return True
 
 
-# ==========================================
-# AGGREGATIONS & ANALYTICS
-# ==========================================
+def get_daily_expenses(db: Session, start, end) -> List[Dict]:
+    """Get total expenses per day in range."""
+    results = db.query(
+        func.date(models.Transaction.date).label("date"),
+        func.coalesce(func.sum(models.Transaction.amount), 0.0).label("amount")
+    ).filter(
+        models.Transaction.type == "expense",
+        models.Transaction.date >= start,
+        models.Transaction.date <= end
+    ).group_by(func.date(models.Transaction.date)).all()
+    return [{"date": r.date, "amount": float(r.amount)} for r in results]
+
+def get_weekly_expenses(db: Session, start, end) -> List[Dict]:
+    """Get total expenses per week in range."""
+    results = db.query(
+        func.strftime("%Y-W%U", models.Transaction.date).label("week"),
+        func.coalesce(func.sum(models.Transaction.amount), 0.0).label("amount")
+    ).filter(
+        models.Transaction.type == "expense",
+        models.Transaction.date >= start,
+        models.Transaction.date <= end
+    ).group_by(func.strftime("%Y-W%U", models.Transaction.date)).all()
+    return [{"week": r.week, "amount": float(r.amount)} for r in results]
+
+
+def get_monthly_expenses(db: Session, start, end) -> List[Dict]:
+    """Get total expenses per month in range."""
+    results = db.query(
+        func.strftime("%Y-%m", models.Transaction.date).label("month"),
+        func.coalesce(func.sum(models.Transaction.amount), 0.0).label("amount")
+    ).filter(
+        models.Transaction.type == "expense",
+        models.Transaction.date >= start,
+        models.Transaction.date <= end
+    ).group_by(func.strftime("%Y-%m", models.Transaction.date)).all()
+    return [{"month": r.month, "amount": float(r.amount)} for r in results]
 
 def get_monthly_summary(db: Session, month: str) -> Dict[str, float]:
     """Calculate total income, expenses, and balance for a given YYYY-MM."""

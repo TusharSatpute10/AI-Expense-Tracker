@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from . import crud, models, schemas, database
 
@@ -85,6 +85,45 @@ def delete_transaction(transaction_id: int, db: Session = Depends(database.get_d
     if not crud.delete_transaction(db, transaction_id):
         raise HTTPException(status_code=404, detail="Transaction not found")
     return {"message": "Transaction deleted"}
+
+
+# ==========================================
+# SPENDING TRENDS ENDPOINT
+# ==========================================
+
+@app.get("/api/spending-trends")
+def get_spending_trends(
+    time_period: str = "monthly",
+    start_date: str = None,
+    end_date: str = None,
+    db: Session = Depends(database.get_db)
+):
+    """Get expense trends for daily, weekly, or monthly periods."""
+    if not start_date or not end_date:
+        end_date = datetime.utcnow().date()
+        if time_period == "daily":
+            start_date = (end_date - timedelta(days=6)).isoformat()
+        elif time_period == "weekly":
+            start_date = (end_date - timedelta(weeks=3)).isoformat()
+        else:
+            start_date = (end_date - timedelta(days=30)).isoformat()
+
+    # Validate date format (YYYY-MM-DD)
+    try:
+        start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        end = datetime.strptime(end_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+
+    # Query logic based on time_period
+    if time_period == "daily":
+        trends = crud.get_daily_expenses(db, start, end)
+    elif time_period == "weekly":
+        trends = crud.get_weekly_expenses(db, start, end)
+    else:
+        trends = crud.get_monthly_expenses(db, start, end)
+
+    return trends
 
 
 # ==========================================

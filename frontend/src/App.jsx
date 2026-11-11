@@ -29,6 +29,7 @@ import { BudgetTracker } from "./components/BudgetTracker"
 import { DashboardPage } from "./pages/DashboardPage"
 import { TransactionsPage } from "./pages/TransactionsPage"
 import { BudgetsPage } from "./pages/BudgetsPage"
+import { AnalyticsPage } from "./pages/AnalyticsPage"
 import SettingsPage from "./pages/SettingsPage"
 import "./styles/theme.css"
 
@@ -40,6 +41,7 @@ function Sidebar({ isSidebarOpen, toggleSidebar, theme, toggleTheme }) {
     { path: "/", label: "Dashboard", icon: LayoutDashboard },
     { path: "/transactions", label: "Transactions", icon: ReceiptText },
     { path: "/budgets", label: "Budgets", icon: PieChart },
+    { path: "/analytics", label: "Analytics", icon: TrendingUp },
     { path: "/settings", label: "Settings", icon: Settings },
   ]
 
@@ -109,8 +111,12 @@ export function App() {
     }
   }
 
-  // Hide the white mobile sidebar X button on desktop
-const handleSubmit = async (e) => {
+  // Shared refresh function that updates both dashboard and transactions
+  const refreshAllData = async () => {
+    await Promise.all([loadDashboardData(), loadTransactions()])
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.amount || !formData.type || !formData.category) return
 
@@ -124,8 +130,7 @@ const handleSubmit = async (e) => {
 
       setFormData({ amount: "", type: "expense", category: "", description: "" })
       setShowForm(false)
-      loadTransactions()
-      loadDashboardData()
+      refreshAllData()
     } catch (e) {
       console.error("Transaction creation failed:", e)
       alert("Failed to create transaction.")
@@ -177,11 +182,13 @@ const handleSubmit = async (e) => {
                 formData={formData}
                 setFormData={setFormData}
                 handleSubmit={handleSubmit}
+                onRefresh={refreshAllData}
               />
             } />
-            <Route path="/transactions" element={<TransactionsPage />} />
+            <Route path="/transactions" element={<TransactionsPage refreshData={refreshAllData} />} />
             <Route path="/budgets" element={<BudgetsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
           </Routes>
         </main>
       </div>

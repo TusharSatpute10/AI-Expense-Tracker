@@ -9,7 +9,7 @@ import {
 
 import { api } from "../api/client"
 
-export function TransactionList({ transactions }) {
+export function TransactionList({ transactions, onRefresh }) {
   const [txns, setTxns] = useState(transactions)
 
   useEffect(() => {
@@ -21,6 +21,9 @@ export function TransactionList({ transactions }) {
       try {
         await api.deleteTransaction(id)
         setTxns(txns.filter((t) => t.id !== id))
+        if (onRefresh) {
+          onRefresh()
+        }
       } catch (e) {
         console.error("Failed to delete transaction:", e)
       }
@@ -51,7 +54,7 @@ export function TransactionList({ transactions }) {
               {new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
             </td>
             <td>
-              <span className={`badge badge-${t.type} text-xs font-semibold px-sm py-xs rounded flex items-center gap-xs`}>
+              <span className={`badge badge-${t.type} text-xs font-semibold px-xs py-xs rounded flex items-center gap-xs`}>
                 {t.type === "income" ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                 {t.type.charAt(0).toUpperCase() + t.type.slice(1)}
               </span>
